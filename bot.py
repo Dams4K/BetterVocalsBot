@@ -1,11 +1,12 @@
 import json
 import discord
+import os
 from discord.ext import commands
 from utils.references import References
 
 class BetterVocals(commands.Bot):
     def __init__(self):
-        super().__init__(get_prefix, case_insensitive=True, help_command=None, intents=discord.Intents.all())
+        super().__init__(self.get_prefix, case_insensitive=True, help_command=None, intents=discord.Intents.all())
         self.events = {
             "join": self.on_member_join,
             "leave": self.on_member_leave
@@ -49,5 +50,15 @@ class BetterVocals(commands.Bot):
         if current_channel.members == [] and len(voice_channels) > 1:
             await current_channel.delete()
     
+    def load_cogs(self, path: str):
+        for filename in os.listdir(path):
+            if os.path.isfile(path + "/" + filename):
+                if filename.endswith(".py"):
+                    cog_path = path.replace("/", ".")
+                    self.load_extension(f"{cog_path}.{filename[:-3]}")
+            elif os.path.isdir(path + "/" + filename):
+                self.load_cogs(path + "/" + filename)
+
+
     def get_prefix(bot, message):
         return References.BOT_PREFIX
